@@ -1,3 +1,5 @@
+import { Decoder, object, string, optional, number, array, oneOf, constant } from '@mojotech/json-type-validation';
+
 // 1. ModuleId
 // 2. ValueType
 export enum ValueType {
@@ -30,8 +32,8 @@ export type Location = {
   description?: string,
 }
 
-// 5. TimeSeriesType
-export enum TimeSeriesType {
+// 5. TimeseriesType
+export enum TimeseriesType {
   ExternalHistorical = 'ExternalHistorical',
   ExternalForecasting = 'ExternalForecasting',
   SimulatedHistorical = 'SimulatedHistorical',
@@ -62,7 +64,7 @@ export type Metadata = {
   valueType: ValueType,
   parameter: Parameter,
   location: Location,
-  timeSeriesType: TimeSeriesType,
+  timeseriesType: TimeseriesType,
   timeStep: TimeStep,
 }
 export type MetadataIds = {
@@ -70,9 +72,17 @@ export type MetadataIds = {
   valueType: ValueType,
   parameterId: string,
   locationId: string,
-  timeSeriesType: TimeSeriesType,
+  timeseriesType: TimeseriesType,
   timeStepId: string,
 }
+export const metadataIdsDecoder: Decoder<MetadataIds> = object({
+  moduleId: string(),
+  valueType: oneOf(constant(ValueType.Scalar), constant(ValueType.Vector), constant(ValueType.Grid)),
+  parameterId: string(),
+  locationId: string(),
+  timeseriesType: oneOf(constant(TimeseriesType.ExternalHistorical), constant(TimeseriesType.ExternalForecasting), constant(TimeseriesType.SimulatedHistorical), constant(TimeseriesType.SimulatedForecasting)),
+  timeStepId: string(),
+});
 
 // DataPoint
 export type DataPoint = {
