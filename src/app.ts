@@ -10,13 +10,13 @@ import { MetadataIds, metadataIdsDecoder, ValueType } from './types';
 const adapterMetadata = 'http://adapter-metadata.default.svc.cluster.local';
 const clientMetadata: AxiosInstance = axios.create({
   baseURL: adapterMetadata,
-  timeout: 1000,
+  timeout: 3000,
   headers: { 'Content-Type': 'application/json' },
 });
 const adapterScalar = 'http://adapter-scalar.default.svc.cluster.local';
 const clientScalar: AxiosInstance = axios.create({
   baseURL: adapterScalar,
-  timeout: 1000,
+  timeout: 3000,
   headers: { 'Content-Type': 'application/json' },
 });
 
