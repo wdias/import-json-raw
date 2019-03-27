@@ -24,8 +24,8 @@ const clientScalar: AxiosInstance = axios.create({
 const app = express();
 
 app.use(compression());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '2mb' }));
+app.use(bodyParser.urlencoded({ limit: '2mb', extended: true }));
 app.use(expressValidator());
 
 app.post('/import/json/raw/:timeseriesId', async (req: Request, res: Response) => {
@@ -33,7 +33,7 @@ app.post('/import/json/raw/:timeseriesId', async (req: Request, res: Response) =
     const timeseriesId: string = req.params.timeseriesId;
     console.log('timeseriesId: ', req.params.timeseriesId);
     const data: JSON = req.body;
-    console.log('data: ', data);
+    console.log('data: ', Array.isArray(data) && [...data.slice(0, 3), '...', data.slice(-3)]);
     const resp: AxiosResponse = await clientMetadata.get(`/timeseries/${timeseriesId}`);
     const metadataIds: MetadataIds = metadataIdsDecoder.runWithException(resp.data);
     if (metadataIds.valueType === ValueType.Scalar) {
@@ -47,7 +47,7 @@ app.post('/import/json/raw/:timeseriesId', async (req: Request, res: Response) =
   }
 });
 
-app.get('/import/public/hc', (req: Request, res: Response) => {
+app.get('/import/json/raw/public/hc', (req: Request, res: Response) => {
   console.log('Import Health Check 1');
   res.send('OK');
 });
