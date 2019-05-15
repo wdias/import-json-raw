@@ -21,10 +21,16 @@ const clientScalar: AxiosInstance = axios.create({
   timeout: 3000,
   headers: { 'Content-Type': 'application/json' },
 });
+const adapterVector = 'http://adapter-vector.default.svc.cluster.local';
+const clientVector: AxiosInstance = axios.create({
+  baseURL: adapterVector,
+  timeout: 3000,
+  headers: { 'Content-Type': 'application/json' },
+});
 const adapterStatus = 'http://adapter-status.default.svc.cluster.local';
 const clientStatus: AxiosInstance = axios.create({
   baseURL: adapterStatus,
-  timeout: 1000,
+  timeout: 3000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -45,19 +51,24 @@ app.post('/import/json/raw/:timeseriesId', async (req: Request, res: Response) =
     const resp: AxiosResponse = await clientMetadata.get(`/timeseries/${timeseriesId}`);
     const metadataIds: MetadataIds = metadataIdsDecoder.runWithException(resp.data);
     const requestId: string = crypto.randomBytes(16).toString('hex');
-    if (metadataIds.valueType === ValueType.Scalar) {
+    if (metadataIds.valueType === ValueType.Scalar || metadataIds.valueType === ValueType.Vector) {
       const q: string = `?requestId=${requestId}`;
-      const result: AxiosResponse = await clientScalar.post(`timeseries/${timeseriesId}${q}`, data);
+      const result: AxiosResponse = (metadataIds.valueType === ValueType.Scalar) ?
+        await clientScalar.post(`timeseries/${timeseriesId}${q}`, data) :
+        await clientVector.post(`timeseries/${timeseriesId}${q}`, data);
       if (REQUEST_STATUS) {
         const statusData: Status = {
           requestId: requestId,
           service: 'Import',
           type: metadataIds.valueType,
         };
-        const reqStatus: AxiosResponse = await clientStatus.post(`${timeseriesId}`, statusData);
-        if (reqStatus.status < 400) {
-          result.data['requestId'] = requestId;
+        try {
+          const reqStatus: AxiosResponse = await clientStatus.post(`${timeseriesId}`, statusData);
+          // if (reqStatus.status < 400) {}
+        } catch (e) {
+          console.error('Unable to set Status: ', e.toString());
         }
+        result.data['requestId'] = requestId;
       }
       res.status(result.status).send(result.data);
     } else {
