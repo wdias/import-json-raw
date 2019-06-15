@@ -1,4 +1,4 @@
-import { Decoder, object, string, optional, number, array, oneOf, constant } from '@mojotech/json-type-validation';
+import { Decoder, object, string, optional, number, oneOf, constant, array } from '@mojotech/json-type-validation';
 
 // 1. ModuleId
 // 2. ValueType
@@ -86,9 +86,14 @@ export const metadataIdsDecoder: Decoder<MetadataIds> = object({
 
 // DataPoint
 export type DataPoint = {
-  time: string | number,
+  time: string,
   value: number,
 }
+export const dataPointDecoder: Decoder<DataPoint> = object({
+  time: string(),
+  value: number()
+});
+export const dataPointsDecoder: Decoder<Array<DataPoint>> = array(dataPointDecoder);
 
 // TimeSeries
 export type TimeSeries = {
